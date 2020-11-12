@@ -2,16 +2,47 @@ const express = require('express');
 const router = express.Router();
 const collections  = require('../config/mongo').collections
 const _ = require('lodash');
+const passport = require('passport');
+const { ensureAuthenticated } = require('../config/auth');
 
 const projectNameGenerator = require("project-name-generator")
 
-router.get('/', (req, res) => {
+router.get('/', ensureAuthenticated, (req, res) => {
 
   res.redirect('/' + projectNameGenerator().dashed)
     
 })
 
-router.get('/delete/:projectname', async (req, res) => {
+router.get('/login', (req, res) => {
+
+  res.render('login.ejs')
+    
+})
+
+router.post('/login', (req, res, next) => {
+
+  passport.authenticate('simpleauth', function(err, user, info) {
+    
+    if (err) { return next(err); }
+    if (!user) { 
+      return res.redirect('/login')
+    }
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+
+      res.redirect('/')
+      
+    });
+  })(req, res, next);  
+    
+})
+
+router.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
+});
+
+router.get('/delete/:projectname', ensureAuthenticated, async (req, res) => {
 
 	await collections.notes.deleteOne({projectname: req.params.projectname})
 
@@ -25,7 +56,7 @@ router.get('/delete/:projectname', async (req, res) => {
     
 })
 
-router.get('/:projectname', async (req, res) => {
+router.get('/:projectname', ensureAuthenticated, async (req, res) => {
 
 	let notes = await collections.notes.find({}).toArray()
 
@@ -40,6 +71,10 @@ router.get('/:projectname', async (req, res) => {
 
 router.post('/note/:projectname', async (req, res) => {
 
+  if (!req.isAuthenticated()) {
+	  return res.json({status:"error", msg:"failed updating"});
+  }
+  
   collections.notes.findOneAndUpdate(
     {projectname: req.params.projectname},
     { $set: {
@@ -50,7 +85,7 @@ router.post('/note/:projectname', async (req, res) => {
     function (err, noteupdate) {
       if (err) {
         console.log(err)
-      	res.json({status:"error", msg:"failed updating"})  
+        res.json({status:"error", msg:"failed updating"})  
         return;
       }
       var msg = ''
@@ -69,6 +104,10 @@ router.post('/note/:projectname', async (req, res) => {
 })
 
 router.get('/note/:projectname', async (req, res) => {
+
+  if (!req.isAuthenticated()) {
+    return res.json({status:"error", msg:"failed updating"});
+  }
 
 	var note = await collections.notes.findOne({projectname: req.params.projectname})
 

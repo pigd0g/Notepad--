@@ -1,11 +1,16 @@
 const dotenv = require('dotenv').config()
 
 const express = require('express');
+const passport = require('passport');
 const morgan = require('morgan');
 const bodyParser   = require('body-parser');
 const moment = require('moment')
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
 
 const app = express();
+
+require('./config/passport')(passport);
 
 var mongodb = require('./config/mongo.js');
 
@@ -14,6 +19,19 @@ app.use(morgan('dev')); // log every request to the console
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+// Express session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true,
+    store: new MongoStore({ mongooseConnection: mongodb.mongo_session, ttl: 30 * 24 * 60 * 60 })
+  })
+);
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 // EJS
 app.set('view engine', 'ejs');
