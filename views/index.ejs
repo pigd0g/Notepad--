@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include("./partials/header"); %>
+
+<body>
+
+<div class="off-canvas off-canvas-sidebar-show">
+  <!-- off-screen toggle button -->
+  <a class="off-canvas-toggle btn btn-primary btn-action" href="#sidebar-id">
+    <i class="icon icon-menu"></i>
+  </a>
+
+  <div id="sidebar-id" class="off-canvas-sidebar">
+    <h1 class="p-2 text-center text-primary"><%= locals.title %></h1>
+    <ul class="nav">
+
+      <li class="nav-item p-2">
+        <ul class="nav">
+          <% for (var i in notes) { %>
+            <li class="nav-item">
+              <a href="/<%= notes[i].projectname %>"><%= notes[i].projectname %></a>
+              <small class="text-gray"><%= locals.moment(notes[i].updated).fromNow() %></small>
+            </li>
+          <% } %>
+        </ul>
+      </li>
+
+    </ul>
+  </div>
+
+  <a class="off-canvas-overlay" href="#close"></a>
+
+  <div class="off-canvas-content">
+    <div class="container">
+
+      <div class="columns mb-2">
+        <div class="column col-auto">
+          <a href="/" class="btn btn-primary">New</a>
+        </div>
+        <div class="column col-auto">
+          <button id="btnsave" class="btn btn-primary">Save</button>
+        </div>
+        <div class="column col-2 col-ml-auto text-right">
+          <p id="savemsg" class="text-gray mb-0 pt-1"></p>
+        </div>
+      </div>
+
+      <div id="editor">
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include("./partials/scripts"); %>
+
+<script>
+
+  const noteRef = '/<%= projectname %>'
+
+  var quill = new Quill('#editor', {
+    theme: 'snow'
+  });
+
+
+  $(function() {
+
+    $.ajax({
+        url: '/note' + noteRef,
+        type: 'GET',
+        dataType: 'json',
+        error: function(err) {
+          console.log(err)
+        },
+        success: function(res) {
+          console.log(res)
+          quill.setContents(res.content)
+        }
+    });
+
+    $('body').on('click', '#btnsave', function (e) {
+        $('#savemsg').html('')
+        $.ajax({
+            type: "POST",
+            url: "/note" + noteRef,
+            data: JSON.stringify({ content: quill.getContents()}),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(data){
+              //console.log(data)
+              if (data.status == "ok") {
+                // Success                                
+                $('#savemsg').html('Saved...')
+                setTimeout(()=> {
+                  $('#savemsg').html('')
+                }, 3000)
+                
+              }
+              else {
+                // Error
+                $('#savemsg').html('Error Saving')
+              }
+
+            },
+            failure: function(errMsg) {
+              // Error
+              $('#savemsg').html('Error Saving')
+            }
+        }); 
+
+    })    
+
+  })
+
+
+</script>
+</body>
+</html>
