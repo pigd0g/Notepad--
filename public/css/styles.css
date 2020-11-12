@@ -81,6 +81,10 @@ ul.nav {
 
 .ql-container {
   font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif !important;
-  font-size: 1.0rem;
-  min-height: 90vh;
+  font-size: 0.8rem;
+  min-height: 80vh;
+}
+
+.ql-toolbar.ql-snow {
+  font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif !important;
 }
