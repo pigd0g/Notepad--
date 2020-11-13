@@ -16,8 +16,8 @@ var mongodb = require('./config/mongo.js');
 
 app.use(morgan('dev')); // log every request to the console
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json({limit: '100mb'}));
+app.use(bodyParser.urlencoded({extended: true, limit: '100mb'}));
 
 // Express session
 app.use(

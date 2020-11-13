@@ -44,49 +44,52 @@
           <p id="savemsg" class="text-gray mb-0 pt-1"></p>
         </div>
       </div>
+      <div id="editordiv">
+        <div id="editorcontainer">
+          <div id="toolbar">
+            <span class="ql-formats">
+              <select class="ql-header">
+                <option value="1">Heading</option>
+                <option value="2">Subheading</option>
+                <option selected>Normal</option>
+              </select>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-bold"></button>
+              <button class="ql-italic"></button>
+              <button class="ql-underline"></button>
+              <button class="ql-strike"></button>
+            </span>
+            <span class="ql-formats">
+              <select class="ql-color"></select>
+              <select class="ql-background"></select>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-list" value="ordered"></button>
+              <button class="ql-list" value="bullet"></button>
+              <select class="ql-align">
+                <option selected></option>
+                <option value="center"></option>
+                <option value="right"></option>
+                <option value="justify"></option>
+              </select>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-blockquote"></button>
+              <button class="ql-link"></button>
+              <button class="ql-image"></button>
+              <button class="ql-code-block"></button>
+              <button class="ql-video"></button>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-clean"></button>
+            </span>
+          </div>
 
-      <div id="toolbar">
-        <span class="ql-formats">
-          <select class="ql-header">
-            <option value="1">Heading</option>
-            <option value="2">Subheading</option>
-            <option selected>Normal</option>
-          </select>
-        </span>
-        <span class="ql-formats">
-          <button class="ql-bold"></button>
-          <button class="ql-italic"></button>
-          <button class="ql-underline"></button>
-          <button class="ql-strike"></button>
-        </span>
-        <span class="ql-formats">
-          <select class="ql-color"></select>
-          <select class="ql-background"></select>
-        </span>
-        <span class="ql-formats">
-          <button class="ql-list" value="ordered"></button>
-          <button class="ql-list" value="bullet"></button>
-          <select class="ql-align">
-            <option selected></option>
-            <option value="center"></option>
-            <option value="right"></option>
-            <option value="justify"></option>
-          </select>
-        </span>
-        <span class="ql-formats">
-          <button class="ql-blockquote"></button>
-          <button class="ql-link"></button>
-          <button class="ql-image"></button>
-          <button class="ql-code-block"></button>
-          <button class="ql-video"></button>
-        </span>
-        <span class="ql-formats">
-          <button class="ql-clean"></button>
-        </span>
-      </div>
+          <div id="editor">
 
-      <div id="editor">
-
+          </div>
+        </div>
       </div>
 
     </div>
@@ -101,7 +104,8 @@
 
   var quill = new Quill('#editor', {
     modules: { toolbar: '#toolbar' },
-    theme: 'snow'
+    theme: 'snow',
+    scrollingContainer: "#editorcontainer",
   });
 
   $(function() {

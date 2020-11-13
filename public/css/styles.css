@@ -82,9 +82,31 @@ ul.nav {
 .ql-container {
   font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif !important;
   font-size: 0.8rem;
-  min-height: 80vh;
 }
 
 .ql-toolbar.ql-snow {
   font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif !important;
+}
+
+.ql-toolbar { 
+  position: absolute; 
+  top: 0;
+  left:0;
+  right:0;
+}
+
+#editordiv {
+  position: relative;
+  border: solid 0.5px #3e4446;
+}
+
+#editorcontainer {
+  height:86vh; 
+  min-height:100%; 
+  overflow-y:auto;
+  margin-top:2.7em;
+}
+
+#editor {
+  min-height:100%; height:auto;
 }
