@@ -26,13 +26,6 @@ Register Yubikey at https://upgrade.yubico.com/getapikey/
 
 Copy Client Id and Secret Key
 
-### Generate Encryption Key
-
-`npm install`
-`node genkey`
-
-Copy the key. Back this up or you may lose your data.
-
 ## sample.env
 
 Copy `cp sample.env .env`
@@ -44,7 +37,7 @@ PORT=3000
 DBURL=e.g. mongodb://notepad-mongo/notepad
 SESSION_SECRET=somesecret
 PASSWORD=somepassword
-ENCRYPTION_KEY=output from genkey
+ENCRYPTION_KEY=somesecretkey-backthisup
 #YUBIKEY OPTIONAL
 YUBI_CLI=clientid from https://upgrade.yubico.com/getapikey/
 YUBI_KEY=secret from https://upgrade.yubico.com/getapikey/

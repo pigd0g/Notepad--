@@ -6,9 +6,8 @@ const passport = require('passport');
 const { ensureAuthenticated } = require('../config/auth');
 
 const projectNameGenerator = require("project-name-generator")
-const { createKey, createCodec } = require('json-crypto');
-
-const codec = createCodec(process.env.ENCRYPTION_KEY);
+const Cryptr = require('cryptr');
+const cryptr = new Cryptr(process.env.ENCRYPTION_KEY);
 
 router.get('/', ensureAuthenticated, (req, res) => {
 
@@ -81,7 +80,7 @@ router.post('/note/:projectname', async (req, res) => {
   collections.notes.findOneAndUpdate(
     {projectname: req.params.projectname},
     { $set: {
-    	content: codec.encrypt(req.body.content),
+    	content: cryptr.encrypt(JSON.stringify(req.body.content)),
     	updated: Date.now()
     } },
     { upsert: true }, 
@@ -114,7 +113,7 @@ router.get('/note/:projectname', async (req, res) => {
 
 	var note = await collections.notes.findOne({projectname: req.params.projectname})
 
-	res.json({status:"ok", msg:"", content: (note) ? codec.decrypt(note.content) : ''})
+	res.json({status:"ok", msg:"", content: (note) ? JSON.parse(cryptr.decrypt(note.content)) : ''})
     
 })
 
