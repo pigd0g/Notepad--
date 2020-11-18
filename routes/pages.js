@@ -6,6 +6,9 @@ const passport = require('passport');
 const { ensureAuthenticated } = require('../config/auth');
 
 const projectNameGenerator = require("project-name-generator")
+const { createKey, createCodec } = require('json-crypto');
+
+const codec = createCodec(process.env.ENCRYPTION_KEY);
 
 router.get('/', ensureAuthenticated, (req, res) => {
 
@@ -74,11 +77,11 @@ router.post('/note/:projectname', async (req, res) => {
   if (!req.isAuthenticated()) {
 	  return res.json({status:"error", msg:"failed updating"});
   }
-  
+
   collections.notes.findOneAndUpdate(
     {projectname: req.params.projectname},
     { $set: {
-    	content: req.body.content,
+    	content: codec.encrypt(req.body.content),
     	updated: Date.now()
     } },
     { upsert: true }, 
@@ -111,7 +114,7 @@ router.get('/note/:projectname', async (req, res) => {
 
 	var note = await collections.notes.findOne({projectname: req.params.projectname})
 
-	res.json({status:"ok", msg:"", content: (note) ? note.content : ''})
+	res.json({status:"ok", msg:"", content: (note) ? codec.decrypt(note.content) : ''})
     
 })
 
