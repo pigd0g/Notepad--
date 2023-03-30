@@ -1,120 +1,118 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const collections  = require('../config/mongo').collections
-const _ = require('lodash');
-const passport = require('passport');
-const { ensureAuthenticated } = require('../config/auth');
+const collections = require("../config/mongo").collections;
+const _ = require("lodash");
+const passport = require("passport");
+const { ensureAuthenticated } = require("../config/auth");
 
-const projectNameGenerator = require("project-name-generator")
-const Cryptr = require('cryptr');
+const projectNameGenerator = require("project-name-generator");
+const Cryptr = require("cryptr");
 const cryptr = new Cryptr(process.env.ENCRYPTION_KEY);
 
-router.get('/', ensureAuthenticated, (req, res) => {
-
-  res.redirect('/' + projectNameGenerator().dashed)
-    
-})
-
-router.get('/login', (req, res) => {
-
-  res.render('login.ejs')
-    
-})
-
-router.post('/login', (req, res, next) => {
-
-  passport.authenticate('simpleauth', function(err, user, info) {
-    
-    if (err) { return next(err); }
-    if (!user) { 
-      return res.redirect('/login')
-    }
-    req.logIn(user, function(err) {
-      if (err) { return next(err); }
-
-      res.redirect('/')
-      
-    });
-  })(req, res, next);  
-    
-})
-
-router.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
+router.get("/", ensureAuthenticated, (req, res) => {
+  res.redirect("/" + projectNameGenerator().dashed);
 });
 
-router.get('/delete/:projectname', ensureAuthenticated, async (req, res) => {
+router.get("/login", (req, res) => {
+  res.render("login.ejs");
+});
 
-	await collections.notes.deleteOne({projectname: req.params.projectname})
+router.post("/login", (req, res, next) => {
+  passport.authenticate("simpleauth", function (err, user, info) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.redirect("/login");
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        return next(err);
+      }
 
-	let onenote = await collections.notes.findOne({})
+      res.redirect("/");
+    });
+  })(req, res, next);
+});
 
-	if (onenote) {
-  	return res.redirect('/' + onenote.projectname)
-	}
+router.get("/logout", (req, res) => {
+  req.logout();
+  res.redirect("/");
+});
 
-  res.redirect('/' + projectNameGenerator().dashed)
-    
-})
+router.get("/delete/:projectname", ensureAuthenticated, async (req, res) => {
+  await collections.notes.deleteOne({ projectname: req.params.projectname });
 
-router.get('/:projectname', ensureAuthenticated, async (req, res) => {
+  let onenote = await collections.notes.findOne({});
 
-	let notes = await collections.notes.find({}).toArray()
+  if (onenote) {
+    return res.redirect("/" + onenote.projectname);
+  }
 
-	//console.log(notes)
+  res.redirect("/" + projectNameGenerator().dashed);
+});
 
-  res.render('index.ejs', {
+router.get("/:projectname", ensureAuthenticated, async (req, res) => {
+  // projectname, updated
+  let notes = await collections.notes
+    .find({}, { projection: { _id: false, projectname: true, updated: true } })
+    .toArray();
+
+  //console.log(notes)
+
+  res.render("index.ejs", {
     projectname: req.params.projectname,
-    notes: notes
-  })
-    
-})
+    notes: notes,
+  });
+});
 
-router.post('/note/:projectname', async (req, res) => {
-
+router.post("/note/:projectname", async (req, res) => {
   if (!req.isAuthenticated()) {
-	  return res.json({status:"error", msg:"failed updating"});
+    return res.json({ status: "error", msg: "failed updating" });
   }
 
   collections.notes.findOneAndUpdate(
-    {projectname: req.params.projectname},
-    { $set: {
-    	content: cryptr.encrypt(JSON.stringify(req.body.content)),
-    	updated: Date.now()
-    } },
-    { upsert: true }, 
+    { projectname: req.params.projectname },
+    {
+      $set: {
+        content: cryptr.encrypt(JSON.stringify(req.body.content)),
+        updated: Date.now(),
+      },
+    },
+    { upsert: true },
     function (err, noteupdate) {
       if (err) {
-        console.log(err)
-        res.json({status:"error", msg:"failed updating"})  
+        console.log(err);
+        res.json({ status: "error", msg: "failed updating" });
         return;
       }
-      var msg = ''
+      var msg = "";
       if (!noteupdate.lastErrorObject.updatedExisting) {
-        console.log("Added Note", req.params.projectname )
-        msg = 'new'
+        console.log("Added Note", req.params.projectname);
+        msg = "new";
       } else {
-        console.log("Updated Note", req.params.projectname )
-        msg = 'update'
+        console.log("Updated Note", req.params.projectname);
+        msg = "update";
       }
-			res.json({status:"ok", msg: msg})
-      
+      res.json({ status: "ok", msg: msg });
     }
   );
-    
-})
+});
 
-router.get('/note/:projectname', async (req, res) => {
-
+router.get("/note/:projectname", async (req, res) => {
   if (!req.isAuthenticated()) {
-    return res.json({status:"error", msg:"failed updating"});
+    return res.json({ status: "error", msg: "failed updating" });
   }
 
-	var note = await collections.notes.findOne({projectname: req.params.projectname})
+  var note = await collections.notes.findOne({
+    projectname: req.params.projectname,
+  });
 
-	res.json({status:"ok", msg:"", content: (note) ? JSON.parse(cryptr.decrypt(note.content)) : ''})
-    
-})
+  res.json({
+    status: "ok",
+    msg: "",
+    content: note ? JSON.parse(cryptr.decrypt(note.content)) : "",
+  });
+});
 
 module.exports = router;
